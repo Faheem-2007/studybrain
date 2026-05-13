@@ -44,7 +44,15 @@ function App() {
                 />
               ))}
               <br />
-              <button onClick={() => console.log(subjects)}>Save Subjects</button>
+              <button onClick={async () => {
+                const response = await fetch("http://localhost:8000/setup", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ subjects: subjects })
+                })
+                const data = await response.json()
+                console.log(data)
+              }}>Save Subjects</button>
             </div>
           )}
         </div>

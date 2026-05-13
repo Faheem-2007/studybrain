@@ -1,8 +1,41 @@
-import fastapi 
-import uvicorn
-app = fastapi.FastAPI()
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from typing import List
+import json
+import os
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+DATA_FILE = "data.json"
+
+def load_data():
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE) as f:
+            return json.load(f)
+    return {}
+
+def save_data(data):
+    with open(DATA_FILE, "w") as f:
+        json.dump(data, f, indent=2)
+
+class SemesterSetup(BaseModel):
+    subjects: List[str]
+
 @app.get("/")
-def read_root():
-    return {"Hello": "World"}
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+def home():
+    return {"message": "StudyBrain is alive"}
+
+@app.post("/setup")
+def setup_semester(data: SemesterSetup):
+    existing = load_data()
+    existing["subjects"] = data.subjects
+    save_data(existing)
+    return {"saved": data.subjects}
