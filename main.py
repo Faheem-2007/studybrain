@@ -6,6 +6,14 @@ import json
 import os
 
 app = FastAPI()
+from datetime import datetime
+
+@app.get("/today")
+def get_today():
+    day = datetime.now().strftime("%A")
+    data = load_data()
+    subjects = data.get("subjects", [])
+    return {"day": day, "subjects": subjects}
 
 app.add_middleware(
     CORSMiddleware,
@@ -28,6 +36,19 @@ def save_data(data):
 
 class SemesterSetup(BaseModel):
     subjects: List[str]
+
+class DailyLog(BaseModel):
+    date: str
+    logs: dict
+
+@app.post("/log")
+def save_log(data: DailyLog):
+    existing = load_data()
+    if "logs" not in existing:
+        existing["logs"] = {}
+    existing["logs"][data.date] = data.logs
+    save_data(existing)
+    return {"saved": True}
 
 @app.get("/")
 def home():

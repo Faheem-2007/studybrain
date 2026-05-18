@@ -1,8 +1,14 @@
 {
   "subjects": [
-    "jesus",
-    "allah",
-    "sivan",
-    "messiah"
-  ]
+    "fahee",
+    "salman",
+    "abbas"
+  ],
+  "logs": {
+    "Wednesday": {
+      "DSA": "avl tress she taught some rr ll lr rl ",
+      "OOPS": "mam thought this operator ",
+      "COMPUTATIONAL STRUCTURES": "t flip flops something"
+    }
+  }
 }
