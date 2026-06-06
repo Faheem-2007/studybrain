@@ -1,7 +1,6 @@
 # StudyBrain
 
 StudyBrain is a small study companion for students who want one place to set up their semester subjects, record what happened in class each day, and eventually turn those logs into a revision plan.
-
 The project currently has a FastAPI backend and a React + Vite frontend. Data is stored locally in `data.json`, so it is simple to run while you are still shaping the idea.
 
 ## Features
