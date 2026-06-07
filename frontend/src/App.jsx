@@ -15,10 +15,13 @@ const styles = {
   input: { background: "#1a1a1a", border: "0.5px solid #2a2a2a", borderRadius: "8px", padding: "10px 14px", color: "#e8e8e8", fontSize: "14px", width: "100%", outline: "none", marginBottom: "10px" },
   textarea: { background: "#1a1a1a", border: "0.5px solid #2a2a2a", borderRadius: "8px", padding: "10px 14px", color: "#e8e8e8", fontSize: "14px", width: "100%", outline: "none", resize: "vertical", minHeight: "80px" },
   btn: { background: "#7c6af7", color: "#fff", border: "none", borderRadius: "8px", padding: "10px 20px", fontSize: "13px", fontWeight: 500, cursor: "pointer" },
+  disabledBtn: { opacity: 0.65, cursor: "not-allowed" },
   backBtn: { background: "none", border: "none", color: "#666", fontSize: "13px", cursor: "pointer", marginBottom: "24px" },
   subjectLog: { background: "#1a1a1a", border: "0.5px solid #2a2a2a", borderRadius: "10px", padding: "16px", marginBottom: "12px" },
   subjectLogTitle: { fontSize: "13px", fontWeight: 500, color: "#bbb", marginBottom: "10px" },
   dayBadge: { display: "inline-block", background: "#1e1a40", color: "#7c6af7", fontSize: "12px", padding: "4px 12px", borderRadius: "20px", marginBottom: "20px" },
+  successMessage: { marginTop: "14px", padding: "12px 14px", border: "1px solid #285943", borderRadius: "8px", background: "#14251d", color: "#79d9a8", fontSize: "13px" },
+  errorMessage: { marginTop: "14px", padding: "12px 14px", border: "1px solid #663737", borderRadius: "8px", background: "#281717", color: "#f29a9a", fontSize: "13px" },
 }
 
 function App() {
@@ -28,6 +31,59 @@ function App() {
   const [subjects, setSubjects] = useState([])
   const [todayData, setTodayData] = useState(null)
   const [logs, setLogs] = useState({})
+  const [setupStatus, setSetupStatus] = useState("idle")
+  const [setupMessage, setSetupMessage] = useState("")
+
+  const confirmSubjectCount = () => {
+    const count = Number(numSubjects)
+
+    if (!Number.isInteger(count) || count < 1) {
+      setSetupStatus("error")
+      setSetupMessage("Enter at least one subject.")
+      return
+    }
+
+    setSubjects((current) =>
+      Array.from({ length: count }, (_, index) => current[index] || "")
+    )
+    setShowSubjects(true)
+    setSetupStatus("idle")
+    setSetupMessage("")
+  }
+
+  const saveSubjects = async () => {
+    const cleanedSubjects = subjects.map((subject) => subject.trim())
+
+    if (cleanedSubjects.some((subject) => !subject)) {
+      setSetupStatus("error")
+      setSetupMessage("Please fill in every subject before saving.")
+      return
+    }
+
+    setSetupStatus("saving")
+    setSetupMessage("")
+
+    try {
+      const res = await fetch("http://localhost:8000/setup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subjects: cleanedSubjects })
+      })
+
+      if (!res.ok) {
+        throw new Error("Unable to save subjects")
+      }
+
+      setSubjects(cleanedSubjects)
+      setSetupStatus("success")
+      setSetupMessage(
+        `${cleanedSubjects.length} ${cleanedSubjects.length === 1 ? "subject" : "subjects"} saved successfully.`
+      )
+    } catch {
+      setSetupStatus("error")
+      setSetupMessage("Could not save your changes. Make sure the backend is running and try again.")
+    }
+  }
 
   return (
     <div style={styles.app}>
@@ -66,9 +122,14 @@ function App() {
             style={{ ...styles.input, maxWidth: "120px" }}
             placeholder="e.g. 5"
             value={numSubjects}
-            onChange={(e) => setNumSubjects(e.target.value)}
+            min="1"
+            onChange={(e) => {
+              setNumSubjects(e.target.value)
+              setSetupStatus("idle")
+              setSetupMessage("")
+            }}
           />
-          <button style={styles.btn} onClick={() => setShowSubjects(true)}>Confirm</button>
+          <button style={styles.btn} onClick={confirmSubjectCount}>Confirm</button>
 
           {showSubjects && (
             <div style={{ marginTop: "20px" }}>
@@ -77,23 +138,39 @@ function App() {
                   key={i}
                   style={styles.input}
                   placeholder={`Subject ${i + 1}`}
+                  value={subjects[i] || ""}
                   onChange={(e) => {
                     const updated = [...subjects]
                     updated[i] = e.target.value
                     setSubjects(updated)
+                    setSetupStatus("idle")
+                    setSetupMessage("")
                   }}
                 />
               ))}
-              <button style={styles.btn} onClick={async () => {
-                const res = await fetch("http://localhost:8000/setup", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ subjects })
-                })
-                const data = await res.json()
-                console.log(data)
-                alert("Subjects saved!")
-              }}>Save Subjects</button>
+              <button
+                style={{
+                  ...styles.btn,
+                  ...(setupStatus === "saving" ? styles.disabledBtn : {})
+                }}
+                disabled={setupStatus === "saving"}
+                onClick={saveSubjects}
+              >
+                {setupStatus === "saving"
+                  ? "Saving..."
+                  : setupStatus === "success"
+                    ? "Changes Saved"
+                    : "Save Changes"}
+              </button>
+
+              {setupMessage && (
+                <div
+                  role="status"
+                  style={setupStatus === "success" ? styles.successMessage : styles.errorMessage}
+                >
+                  {setupMessage}
+                </div>
+              )}
             </div>
           )}
         </div>
