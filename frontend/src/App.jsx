@@ -17,7 +17,7 @@ const styles = {
   btn: { background: "#7c6af7", color: "#fff", border: "none", borderRadius: "8px", padding: "10px 20px", fontSize: "13px", fontWeight: 500, cursor: "pointer" },
   disabledBtn: { opacity: 0.65, cursor: "not-allowed" },
   backBtn: { background: "none", border: "none", color: "#666", fontSize: "13px", cursor: "pointer", marginBottom: "24px" },
-  subjectLog: { background: "#1a1a1a", border: "0.5px solid #2a2a2a", borderRadius: "10px", padding: "16px", marginBottom: "12px" },
+  subjectLog: { background: "#1a1a1a", border: "0.5px solid #424242", borderRadius: "10px", padding: "16px", marginBottom: "12px" },
   subjectLogTitle: { fontSize: "13px", fontWeight: 500, color: "#bbb", marginBottom: "10px" },
   dayBadge: { display: "inline-block", background: "#1e1a40", color: "#7c6af7", fontSize: "12px", padding: "4px 12px", borderRadius: "20px", marginBottom: "20px" },
   successMessage: { marginTop: "14px", padding: "12px 14px", border: "1px solid #285943", borderRadius: "8px", background: "#14251d", color: "#79d9a8", fontSize: "13px" },
@@ -56,7 +56,7 @@ function App() {
 
     if (cleanedSubjects.some((subject) => !subject)) {
       setSetupStatus("error")
-      setSetupMessage("Please fill in every subject before saving.")
+      setSetupMessage("fill in every subject before saving.")
       return
     }
 
